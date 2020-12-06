@@ -24,14 +24,44 @@ jobs:
       # 詳しくは以下の記事を参照ください。
       # https://qiita.com/tabtt3/items/996e512e7002e9f26b0a
       - run: sudo composer self-update --1
+      # restore_cacheでは、保存されたキャッシュを復元します。
+      # keyには、復元するキャッシュの名前を指定します。
       - restore_cache:
           key: composer-v1-{{ checksum "composer.lock" }}
       # ここでは、PCの開発環境を構築した時と同様に、Composerを使用してPHP関連パッケージをインストールします。
       # ひとつ前のステップでは、CircleCIの環境にはGitHubからソースコードをコピーしてきただけなので、LaravelのフレームワークのコードなどPHP関連パッケージが存在しません。
       # CircleCIで実施するテストでは、あなたのPCのローカル環境で実施するテストとは違って、このように必要なパッケージを毎回インストールしなければならないということを覚えておいてください
       - run: composer install -n --prefer-dist
+      # save_cacheでは、keyに指定した名前でキャッシュを保存します。
+      # 保存するディレクトリ名やファイル名はpathsに指定します。
+      # ここでは、ComposerによってPHP関連のパッケージがインストールされるディレクトリであるvendorを指定しています。
       - save_cache:
+      # keyに指定する名前はどんな名前でも良いのですが、Composerによってインストールしたパッケージのキャッシュであることがわかるよう先頭にcomposerを付けました。
+      # その後にはv1と付けています。
+      # CircleCIでは、キャッシュを約1ヶ月保存してくれますが、意図的にキャッシュをクリアする方法はありません。
+      # 既に保存済みのキャッシュを無視して、新たにキャッシュを保存し直したい時はkeyに指定する名前を変える必要があります。
+      # そんな時のために名前を変更できるよう、あらかじめv1といった部分を名前に含めています。
+      # そして、もしキャッシュを保存し直したい時はv2, v3と名前を変えていけるようにしています。
+
+        # {{ checksum "composer.lock" }}という部分は、CircleCIのテンプレート機能を使用しています。
+        # {{ checksum "ファイル名" }}とすることで、ファイルをハッシュ化した値を算出しています。
+
+        # composer.lockでは、Composerによってインストールされた各パッケージのバージョンが、依存パッケージも含め管理されています。
+        # そこで、composer.lockファイルのハッシュ値を、キャッシュのkeyに含めています。
+        # もし、composer.lockに変更があれば、算出されるハッシュ値も異なったものとなり、キャッシュのkeyとして違った名前になります。
+        # その結果、restore_cacheでは、保存済みのキャッシュ(vendorディレクトリ)が復元されることはありません。
+        # そして、次のステップのcomposer instalでvendorディレクトリが作成されるとともにPHP関連のパッケージがインストールされます。
+        # 言い換えると、
+        # composer.lockに変更が無い限りは、restore_chacheでは「前回以前のCircleCI実行時のsave_cacheで保存されたキャッシュ」を復元する
+        # composer.lockに何か変更があれば、restore_chacheではキャッシュを復元せず、save_cacheで新しいkeyにてキャッシュを保存し直す
+        # といった動きになります。
+
+
           key: composer-v1-{{ checksum "composer.lock" }}
+
+          # save_cacheでは、pathsに指定したディレクトリやファイルをキャッシュとして保存します。
+          # 2つ前のrestore_cacheステップでキャッシュが見つからなかった場合は、1つ前のcomposer installのステップでvendorディレクトリが作成され、そこにPHP関連のパッケージがインストールされます。
+          # そして、save_cacheのステップでは、そのvendorディレクトリをキャッシュとして保存します。
           paths:
             - vendor
       - restore_cache:
