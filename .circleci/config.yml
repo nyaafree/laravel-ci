@@ -79,19 +79,12 @@ jobs:
           # fi
 
           # まず、[]は必須で省略できません。
-
           # また、[の直後と、]の直前にはそれぞれスペースが必須です。[! -d node_modules]では、エラーになります。
-
           # もし、[ -d node_modules ]という書き方をすると、node_modulesというディレクトリが存在すればtrueを、存在しなければfalseを返します。
-
           # !は、NOT条件となります。
-
           # そのため、[ ! -d node_modules ]は、node_modulesというディレクトリが存在すればfalseを、存在しなければtrueを返します。
-
           # では、node_modulesというディレクトリが存在しない場合のみ、npm ciが実行されます。
-
           # なぜ、このような条件を付けているかというと、npm ciコマンドでは、パッケージをインストールする前にいったんnode_modulesディレクトリを削除してしまうからです。
-
             if [ ! -d node_modules ]; then
               npm ci
             fi
