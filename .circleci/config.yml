@@ -70,8 +70,8 @@ jobs:
       - run:
           name: npm ci
           # CircleCIのcommandに複数行に渡ってコマンドを記述する時は、まず最初に|を記述し、次の行からコマンドを記述します。
-          command: |
-          # if文の構造は以下のようになっています。
+
+                    # if文の構造は以下のようになっています。
           # ifを逆さまに記述したfiは、if文の終わりを示しており、必須です
 
           # if 条件式; then
@@ -85,6 +85,7 @@ jobs:
           # そのため、[ ! -d node_modules ]は、node_modulesというディレクトリが存在すればfalseを、存在しなければtrueを返します。
           # では、node_modulesというディレクトリが存在しない場合のみ、npm ciが実行されます。
           # なぜ、このような条件を付けているかというと、npm ciコマンドでは、パッケージをインストールする前にいったんnode_modulesディレクトリを削除してしまうからです。
+          command: |
             if [ ! -d node_modules ]; then
               npm ci
             fi
