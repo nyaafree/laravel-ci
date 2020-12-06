@@ -17,10 +17,18 @@ jobs:
       DB_USERNAME: default
       DB_PASSWORD: secret
     steps:
+      # checkoutは、GitHubからCircleCIの環境にソースコードをコピー(git clone)してきます。
       - checkout
+      # 2020年10月下旬よりCircleCIでは条件によってはPHP関連パッケージのインストール(この次のステップで実施)がエラーになり始めました。
+      # そうしたエラーを回避するための処理となります。
+      # 詳しくは以下の記事を参照ください。
+      # https://qiita.com/tabtt3/items/996e512e7002e9f26b0a
       - run: sudo composer self-update --1
       - restore_cache:
           key: composer-v1-{{ checksum "composer.lock" }}
+      # ここでは、PCの開発環境を構築した時と同様に、Composerを使用してPHP関連パッケージをインストールします。
+      # ひとつ前のステップでは、CircleCIの環境にはGitHubからソースコードをコピーしてきただけなので、LaravelのフレームワークのコードなどPHP関連パッケージが存在しません。
+      # CircleCIで実施するテストでは、あなたのPCのローカル環境で実施するテストとは違って、このように必要なパッケージを毎回インストールしなければならないということを覚えておいてください
       - run: composer install -n --prefer-dist
       - save_cache:
           key: composer-v1-{{ checksum "composer.lock" }}
@@ -28,6 +36,7 @@ jobs:
             - vendor
       - restore_cache:
           key: npm-v1-{{ checksum "package-lock.json" }}
+      # このステップでは、PCの開発環境を構築した時と同様に、npmを使用してJavaScript関連パッケージをインストールします。
       - run:
           name: npm ci
           command: |
@@ -46,6 +55,7 @@ jobs:
             sudo apt-get install libpq-dev
             sudo docker-php-ext-install pdo_pgsql
             dockerize -wait tcp://localhost:5432 -timeout 1m
+      # このステップでは、2章で実施した時と同様に、テストを実行します。
       - run:
           name: php test
           command: vendor/bin/phpunit
