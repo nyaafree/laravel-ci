@@ -33,7 +33,7 @@
 
                 <input type="hidden" name="remember" id="remember" value="on">
 
-               <div class="text-left">--}}
+               <div class="text-left">
                  <a href="{{ route('password.request') }}" class="card-text">パスワードを忘れた方</a>
                </div>
 
